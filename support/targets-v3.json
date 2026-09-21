@@ -18,24 +18,6 @@
         "url": "https://raw.githubusercontent.com/SammyEnigma/Root-My-Galaxy-Payloads/main/kernelsu/ksud-pa3q-S938BXXS5AYG4-kdp",
         "size": 6112464
       }
-    },
-    {
-      "payloadId": "pa3q-S938BXXS5AYG4-ksu330",
-      "displayName": "Galaxy S25 Ultra (SM-S938B) | Kernel 6.6.30 | KernelSU 3.3.0 (test)",
-      "models": [
-        "SM-S938B"
-      ],
-      "kernelVersions": [
-        "6.6.30"
-      ],
-      "exploit": {
-        "url": "https://raw.githubusercontent.com/SammyEnigma/Root-My-Galaxy-Payloads/main/artifacts/pa3q-S938BXXS5AYG4/cve-2026-43499-app.so?v=3",
-        "size": 104128
-      },
-      "kernelsu": {
-        "url": "https://raw.githubusercontent.com/SammyEnigma/Root-My-Galaxy-Payloads/main/kernelsu/ksud-pa3q-S938BXXS5AYG4-kdp-v330",
-        "size": 6328344
-      }
     }
   ]
 }
