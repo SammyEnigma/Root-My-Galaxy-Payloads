@@ -203,3 +203,4 @@
 #endif /* OFFSET_H */
 
 /* Tracefs sched_switch event id — kernel 6.6 GKI. */
+#define SLIDE_TRACEFS_EVENT_ID 97
