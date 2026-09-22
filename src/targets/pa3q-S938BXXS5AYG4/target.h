@@ -222,3 +222,11 @@
  * uses the default tree layout and never produces a write during
  * pselect observation (matches sibling android14 targets). */
 #define APP_PRODUCTION_STACK_PI_RIGHT_ONLY 1
+
+/* Use a dedicated production slot for the fops stage. Slot 0 is used
+ * by stage 1's gate write and its bank entry is built with the default
+ * tree geometry; the fops route needs the FOPS-specific geometry from
+ * put_slide_bank_entry()'s P0_ORACLE_PRODUCTION_SLOT block. */
+#define APP_FOPS_REUSE_VERIFIED_PAGE 1
+#define P0_ORACLE_PRODUCTION_SLOT 2
+#define APP_PRODUCTION_SLOT_PI_RIGHT 1
