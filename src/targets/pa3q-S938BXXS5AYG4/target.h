@@ -217,3 +217,8 @@
 
 #endif /* OFFSET_H */
 
+
+/* Stage-2 FOPS pselect waiter layout. Without this, the fops stage
+ * uses the default tree layout and never produces a write during
+ * pselect observation (matches sibling android14 targets). */
+#define APP_PRODUCTION_STACK_PI_RIGHT_ONLY 1
