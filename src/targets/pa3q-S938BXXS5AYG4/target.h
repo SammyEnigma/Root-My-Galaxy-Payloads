@@ -200,7 +200,19 @@
 #define FOPS_SPLICE_READ_OFF 0xb8
 #define FOPS_SHOW_FDINFO_OFF 0xd8
 
-#endif /* OFFSET_H */
 
 /* Tracefs sched_switch event id — kernel 6.6 GKI. */
 #define SLIDE_TRACEFS_EVENT_ID 97
+
+/* --- Pipe pool sizing for stage-1 / stage-2 coexistence --- *
+ * common.h default is 15 slabs each. That produces 2 × 240 = 480
+ * pipe objects, ~15,360 pages, which leaves no headroom for the
+ * fresh-physrw pipe that stage 2 needs.
+ *
+ * Reduce to 8 slabs each: 2 × 128 = 256 pipes, ~8,192 pages.
+ * That leaves ~8,000 pages of budget for stage 2's fresh physrw
+ * pool and the fops-stage refreshes. */
+#define PIPE_RECLAIM_SLABS 8
+#define PIPE_DRAIN_SLABS   8
+
+#endif /* OFFSET_H */
