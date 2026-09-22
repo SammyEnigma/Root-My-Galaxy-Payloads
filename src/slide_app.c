@@ -203,7 +203,7 @@ static const uint64_t slide_max_offset = 0x3f8000ULL;
 
 #if defined(APP_TRACEFS_SLIDE) && APP_TRACEFS_SLIDE
 #define SLIDE_TRACEFS_ROOT "/sys/kernel/tracing"
-#define SLIDE_TRACEFS_CANDIDATES 128
+#define SLIDE_TRACEFS_CANDIDATES 65536
 static unsigned int slide_tracefs_raw_pages;
 static unsigned int slide_tracefs_raw_bytes;
 static unsigned int slide_tracefs_raw_events;
