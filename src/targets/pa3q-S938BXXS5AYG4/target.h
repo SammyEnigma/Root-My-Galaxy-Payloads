@@ -205,9 +205,6 @@
 /* Tracefs sched_switch event id — kernel 6.6 GKI. */
 #define SLIDE_TRACEFS_EVENT_ID 97
 /* --- Stage-2 retry tuning (added for pa3q) --- */
-/* Inner write-window retries within one fops attempt. */
-#define SLIDE_PHYSICAL_SLOT_DELAYS_USEC \
-  20000, 25000, 30000, 35000, 40000, 45000, 50000, 60000
 
 /* Fops route fresh-page retries. */
 #define APP_FOPS_FRESH_PAGE_ATTEMPTS 8

