@@ -216,3 +216,8 @@
 #define PIPE_DRAIN_SLABS   4
 
 #endif /* OFFSET_H */
+
+/* Use P0_ORACLE_PRODUCTION_SLOT instead of slot 0 for fops stage.
+ * Reference pattern from e1s/r12s targets. */
+#define APP_FOPS_REUSE_VERIFIED_PAGE 1
+#define P0_ORACLE_PRODUCTION_SLOT 1
