@@ -202,7 +202,7 @@
 
 
 /* Tracefs sched_switch event id — kernel 6.6 GKI. */
-#define SLIDE_TRACEFS_EVENT_ID 97
+#define SLIDE_TRACEFS_EVENT_ID 109
 
 /* --- Pipe pool sizing for stage-1 / stage-2 coexistence --- *
  * common.h default is 15 slabs each. That produces 2 × 240 = 480
