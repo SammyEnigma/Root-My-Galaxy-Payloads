@@ -213,6 +213,6 @@
  * That leaves ~8,000 pages of budget for stage 2's fresh physrw
  * pool and the fops-stage refreshes. */
 #define PIPE_RECLAIM_SLABS 15
-#define PIPE_DRAIN_SLABS   8
+#define PIPE_DRAIN_SLABS   4
 
 #endif /* OFFSET_H */
