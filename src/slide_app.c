@@ -2419,6 +2419,8 @@ int app_trigger_fops_slide_route(void) {
       delay_index++;
       snprintf(delay_arg, sizeof(delay_arg), "%d", next_delay);
       SYSCHK(setenv("SLIDE_ENTER_DELAY_USEC", delay_arg, 1));
+      pr_info("app fops retry env set delay=%s current=%u\n",
+              delay_arg, (unsigned)slide_enter_delay_usec());
       slide_route_fine_delay_ticks = slide_select_route_fine_delay_ticks();
       if (slide_route_fine_delay_ticks == UINT64_MAX) {
         return 0;
