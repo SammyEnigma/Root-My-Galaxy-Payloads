@@ -224,3 +224,10 @@
 #define APP_PRODUCTION_STACK_PI_RIGHT_ONLY 1
 
  * by stage 1's gate write and its bank entry is built with the default
+
+/* Use slot 0 (the FOPS payload's own bank slot) with FOPS-specific
+ * PI-tree geometry. Slot 0 is the only slot the non-diag FOPS payload
+ * writes to (util.c:1899). Selecting any other slot reads an
+ * uninitialized slide_bank_parents[] entry → NULL parent → crash. */
+#define P0_ORACLE_PRODUCTION_SLOT 0
+#define APP_PRODUCTION_SLOT_PI_RIGHT 1
