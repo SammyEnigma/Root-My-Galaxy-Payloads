@@ -52,7 +52,7 @@ PRELOAD_SRCS := \
   src/fops.c \
   src/pipe.c \
   src/root.c \
-  src/preload.c
+  src/g4hold.c src/preload.c
 
 APP_PRELOAD_SRCS := \
   src/main.c \
@@ -61,7 +61,7 @@ APP_PRELOAD_SRCS := \
   src/fops.c \
   src/pipe.c \
   src/root.c \
-  src/preload.c
+  src/g4hold.c src/preload.c
 
 ifeq ($(TARGET),a53x-A536EXXSNGZG3)
 APP_PRELOAD_SRCS := \
