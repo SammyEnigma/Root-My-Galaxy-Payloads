@@ -2252,7 +2252,7 @@ static int slide_restore_physical_oracle(void) {
 static int app_trigger_fops_slide_slot(size_t slot) {
   static size_t delay_index;
   static const int delays[] = {
-    50000, 60000, 80000, 40000, 90000, 70000,
+    20000, 60000, 80000, 40000, 90000, 70000,
     30000, 20000, 75000, 65000, 85000, 55000,
   };
   if (!select_slide_payload_index(slot)) {
@@ -2333,7 +2333,7 @@ int app_trigger_fops_oracle_slot(size_t slot) {
 int app_trigger_fops_slide_route(void) {
   static size_t delay_index;
   static const int delays[] = {
-    50000, 60000, 80000, 40000, 90000, 70000,
+    20000, 60000, 80000, 40000, 90000, 70000,
     30000, 20000, 75000, 65000, 85000, 55000,
   };
 #if defined(APP_CLOSED_FOPS_ROUTE) && APP_CLOSED_FOPS_ROUTE
