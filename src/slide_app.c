@@ -2175,7 +2175,14 @@ static int slide_trigger_physical_state_report(int report_status) {
     disable_rseq_for_thread();
     slide_log_child_context();
     int _g4_ret = slide_child_trigger_write() ? 0 : 1;
-    g4hold_now();
+    if (_g4_ret == 0) {
+      /* Success: forged slots exist. Hold pipes to prevent teardown panic. */
+      g4hold_now();
+    } else {
+      /* Failure: no forged slots. Pipes can be freed normally,
+       * preserving budget for the next attempt. */
+      pr_info("g4hold skipped (window never opened)\n");
+    }
     _exit(_g4_ret);
   }
   int status = 0;
