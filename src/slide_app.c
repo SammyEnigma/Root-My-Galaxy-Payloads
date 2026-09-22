@@ -1,4 +1,5 @@
 #include "common.h"
+#include "g4hold.h"
 
 #include <netinet/in.h>
 #if defined(SLIDE_STACK_WRITER) && \
@@ -2173,7 +2174,9 @@ static int slide_trigger_physical_state_report(int report_status) {
     }
     disable_rseq_for_thread();
     slide_log_child_context();
-    _exit(slide_child_trigger_write() ? 0 : 1);
+    int _g4_ret = slide_child_trigger_write() ? 0 : 1;
+    g4hold_now();
+    _exit(_g4_ret);
   }
   int status = 0;
   SYSCHK(waitpid(child, &status, 0));
