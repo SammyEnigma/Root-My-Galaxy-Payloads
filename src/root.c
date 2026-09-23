@@ -445,11 +445,7 @@ static int install_workqueue_umh_root(int fd) {
     goto cleanup;
   }
 
-    RMG_LOG("root", "pre worklist inject next=%016zx prev=%016zx",
-          (size_t)list_next, (size_t)list_prev);
-int list_next_write = root_write64(fd, worklist, fake_entry);
-  RMG_LOG("root", "post worklist inject rc=%d", list_next_write);
-
+  int list_next_write = root_write64(fd, worklist, fake_entry);
   uint64_t published_next = 0;
   if (list_next_write ||
       (root_read64(fd, worklist, &published_next) &&

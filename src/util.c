@@ -2705,38 +2705,3 @@ ssize_t kernel_write_data(int fd, uintptr_t target, const void *data, size_t len
 ssize_t kernel_read_data(int fd, uintptr_t target, void *data, size_t len) {
   return configfs_read_once(fd, target, data, len);
 }
-
-/* ---- v31 persistent logging ---------------------------------------- */
-#include <stdarg.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdio.h>
-
-static int rmg_persist_fd = -1;
-
-void rmg_persist_log(const char *tag, const char *fmt, ...)
-{
-    if (rmg_persist_fd < 0) {
-        rmg_persist_fd = open("/data/local/tmp/rmg.log",
-                              O_WRONLY | O_CREAT | O_APPEND, 0644);
-        if (rmg_persist_fd < 0) return;
-    }
-
-    char buf[1024];
-    va_list ap;
-    va_start(ap, fmt);
-    int n = snprintf(buf, sizeof buf, "[%s] ", tag);
-    if (n > 0 && n < (int)sizeof buf)
-        n += vsnprintf(buf + n, sizeof buf - n, fmt, ap);
-    va_end(ap);
-
-    if (n > 0 && n < (int)sizeof buf) {
-        ssize_t w = 0;
-        while (w < n) {
-            ssize_t r = write(rmg_persist_fd, buf + w, n - w);
-            if (r <= 0) break;
-            w += r;
-        }
-        fsync(rmg_persist_fd);
-    }
-}
