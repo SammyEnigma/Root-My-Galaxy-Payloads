@@ -1,2 +1,12 @@
 /build/
 /diagnostics/
+
+# Session-local rollback points and one-shot scripts
+*.bak
+*.bak.*
+*.pre-*
+src/*.pre-*
+src/targets/*/*.pre-*
+src/targets/*/*.bak
+apply_*.py
+fix_*.py
