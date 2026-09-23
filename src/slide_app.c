@@ -16,7 +16,7 @@ int slide_in_fops_stage = 0;
 #endif
 #if !defined(SLIDE_STACK_WRITER)
 #ifndef SLIDE_PSELECT_WORD_SHIFT
-#define SLIDE_PSELECT_WORD_SHIFT 0
+#define SLIDE_PSELECT_WORD_SHIFT 3
 #endif
 #endif
 #ifndef SLIDE_WAIT_NSEC
