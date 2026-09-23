@@ -199,7 +199,7 @@ int p0_virtual_base_probe;
 #endif
 
 static int slide_commit_stext(uint64_t stext, const char *source);
-static const uint64_t slide_max_offset = 0x3f8000ULL;
+static const uint64_t slide_max_offset = 0x4000000000ULL;
 
 #if defined(APP_TRACEFS_SLIDE) && APP_TRACEFS_SLIDE
 #define SLIDE_TRACEFS_ROOT "/sys/kernel/tracing"
