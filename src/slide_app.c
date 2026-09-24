@@ -1031,6 +1031,21 @@ RMG_RACE_INLINE void prepare_slide_pselect_fdsets(
     slide_pselect_put_waiter_word(
         in, out, ex, words_per_set, w->word, w->value, w->name);
   }
+
+  /* v40-prepare-verify-probe */
+  {
+    int wps_v = slide_pselect_words_per_set();
+    uint64_t vr0  = slide_pselect_get_global_word(in, out, ex, wps_v, 0);
+    uint64_t vr2  = slide_pselect_get_global_word(in, out, ex, wps_v, 2);
+    uint64_t vr5  = slide_pselect_get_global_word(in, out, ex, wps_v, 5);
+    uint64_t vr7  = slide_pselect_get_global_word(in, out, ex, wps_v, 7);
+    uint64_t vr11 = slide_pselect_get_global_word(in, out, ex, wps_v, 11);
+    pr_info("slide fdsets after prepare w0=%016llx w2=%016llx w5=%016llx "
+            "w7=%016llx w11=%016llx\n",
+            (unsigned long long)vr0, (unsigned long long)vr2,
+            (unsigned long long)vr5, (unsigned long long)vr7,
+            (unsigned long long)vr11);
+  }
 }
 
 RMG_RACE_INLINE void open_slide_selected_fds(
@@ -1161,6 +1176,20 @@ RMG_RACE_INLINE void slide_pselect_stack_copy(void) {
 #if !(defined(APP_S928_STABLE_RACE) && APP_S928_STABLE_RACE)
   atomic_store(&slide_consume_go, 1);
 #endif
+  /* v40-pre-read-probe */
+  {
+    int wps = slide_pselect_words_per_set();
+    uint64_t pr0  = slide_pselect_get_global_word(&in, &out, &ex, wps, 0);
+    uint64_t pr2  = slide_pselect_get_global_word(&in, &out, &ex, wps, 2);
+    uint64_t pr5  = slide_pselect_get_global_word(&in, &out, &ex, wps, 5);
+    uint64_t pr7  = slide_pselect_get_global_word(&in, &out, &ex, wps, 7);
+    uint64_t pr11 = slide_pselect_get_global_word(&in, &out, &ex, wps, 11);
+    pr_info("slide pselect pre-read w0=%016llx w2=%016llx w5=%016llx "
+            "w7=%016llx w11=%016llx\n",
+            (unsigned long long)pr0, (unsigned long long)pr2,
+            (unsigned long long)pr5, (unsigned long long)pr7,
+            (unsigned long long)pr11);
+  }
   errno = 0;
   int ret = (int)syscall(SYS_pselect6, slide_route_nfds,
                          &in, &out, &ex, timeoutp, NULL);
