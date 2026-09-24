@@ -234,8 +234,14 @@ __attribute__((constructor)) static void load(void) {
     }
 
 #if defined(APP_PAYLOAD) && defined(SLIDE_P0_OFFSET_CANDIDATES)
-    if (atomic_load(&app_p0_state->writer_started)) {
-      pr_error("stack writer ran; refusing retry on this boot\n");
+    /* v44-retry-fix */
+    int __v44_exit_code = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+    if (__v44_exit_code == 2) {
+      pr_info("attempt=%d lost pselect race; retrying\n", attempt);
+      /* fall through to the retry path (delay + next iteration) */
+    } else if (atomic_load(&app_p0_state->writer_started)) {
+      pr_error("stack writer ran; refusing retry on this boot "
+               "(exit=%d)\n", __v44_exit_code);
       break;
     }
 #endif
