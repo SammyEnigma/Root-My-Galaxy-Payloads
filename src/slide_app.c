@@ -1224,7 +1224,7 @@ RMG_RACE_INLINE void slide_pselect_stack_copy(void) {
           atomic_load(&slide_consume_last_sched_errno));
 #endif
   atomic_store(&slide_stack_write_window,
-               ret > 0 && atomic_load(&slide_consume_sched_ok) > 0);
+               ret >= 0 && atomic_load(&slide_consume_sched_ok) > 0);
 
   close(high_read);
   if (block_fd != pipefd[0]) {
