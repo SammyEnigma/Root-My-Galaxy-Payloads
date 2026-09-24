@@ -19,12 +19,6 @@ int slide_in_fops_stage = 0;
 #define SLIDE_PSELECT_WORD_SHIFT 0
 #endif
 #endif
-#ifndef SLIDE_WAIT_NSEC
-#define SLIDE_WAIT_NSEC 50000000L
-#endif
-#ifndef SLIDE_REQUEUE_ARM_USEC
-#define SLIDE_REQUEUE_ARM_USEC 0
-#endif
 #define SLIDE_REQUEUE_MAX_POLLS 1000
 #define SLIDE_REQUEUE_POLL_USEC 1000
 
@@ -1225,6 +1219,39 @@ RMG_RACE_INLINE void slide_pselect_stack_copy(void) {
 #endif
   atomic_store(&slide_stack_write_window,
                ret >= 0 && atomic_load(&slide_consume_sched_ok) > 0);
+  {
+  int wps = slide_pselect_words_per_set();
+  uint64_t pw0  = slide_pselect_get_global_word(&in, &out, &ex, wps, 0);
+  uint64_t pw2  = slide_pselect_get_global_word(&in, &out, &ex, wps, 2);
+  uint64_t pw5  = slide_pselect_get_global_word(&in, &out, &ex, wps, 5);
+  uint64_t pw7  = slide_pselect_get_global_word(&in, &out, &ex, wps, 7);
+  uint64_t pw11 = slide_pselect_get_global_word(&in, &out, &ex, wps, 11);
+  pr_info("slide pselect post-read w0=%016llx w2=%016llx w5=%016llx "
+          "w7=%016llx w11=%016llx\n",
+          (unsigned long long)pw0, (unsigned long long)pw2,
+          (unsigned long long)pw5, (unsigned long long)pw7,
+          (unsigned long long)pw11);
+}
+  {
+  int wps = slide_pselect_words_per_set();
+  uint64_t pw0  = slide_pselect_get_global_word(&in, &out, &ex, wps, 0);
+  uint64_t pw2  = slide_pselect_get_global_word(&in, &out, &ex, wps, 2);
+  uint64_t pw5  = slide_pselect_get_global_word(&in, &out, &ex, wps, 5);
+  uint64_t pw7  = slide_pselect_get_global_word(&in, &out, &ex, wps, 7);
+  uint64_t pw11 = slide_pselect_get_global_word(&in, &out, &ex, wps, 11);
+  pr_info("slide pselect post-read w0=%016llx w2=%016llx w5=%016llx "
+          "w7=%016llx w11=%016llx\n",
+          (unsigned long long)pw0, (unsigned long long)pw2,
+          (unsigned long long)pw5, (unsigned long long)pw7,
+          (unsigned long long)pw11);
+}
+int words_per_set = slide_pselect_words_per_set();
+uint64_t post_w0  = slide_pselect_get_global_word(&in, &out, &ex, words_per_set, 0);
+uint64_t post_w2  = slide_pselect_get_global_word(&in, &out, &ex, words_per_set, 2);
+uint64_t post_w11 = slide_pselect_get_global_word(&in, &out, &ex, words_per_set, 11);
+pr_info("slide pselect post-read w0=%016llx w2=%016llx w11=%016llx\n",
+        (unsigned long long)post_w0, (unsigned long long)post_w2,
+        (unsigned long long)post_w11);
 
   close(high_read);
   if (block_fd != pipefd[0]) {
@@ -1870,6 +1897,8 @@ void *slide_waiter_thread(void *arg __attribute__((unused))) {
     timeout.tv_nsec -= 1000000000L;
   }
 
+  pr_info("slide timing WAIT_NSEC=%ld ARM_USEC=%d\n",
+          (long)SLIDE_WAIT_NSEC, SLIDE_REQUEUE_ARM_USEC);
   atomic_store(&slide_waiter_waiting, 1);
   errno = 0;
   long wait_ret = futex_op(&slide_f_wait, FUTEX_WAIT_REQUEUE_PI, 0, &timeout,
@@ -2109,6 +2138,9 @@ static int slide_child_trigger_write(void) {
   if (SLIDE_REQUEUE_ARM_USEC) {
     usleep(SLIDE_REQUEUE_ARM_USEC);
   }
+  pr_info("slide timing ARM_USEC=%d POLLS=%d POLL_USEC=%d\n",
+          SLIDE_REQUEUE_ARM_USEC, SLIDE_REQUEUE_MAX_POLLS,
+          SLIDE_REQUEUE_POLL_USEC);
   pr_info("slide pi stage=cmp-enter waiter_tid=%d\n",
           atomic_load(&slide_waiter_tid));
 
