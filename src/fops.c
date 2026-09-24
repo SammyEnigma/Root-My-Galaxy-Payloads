@@ -37,7 +37,7 @@ static int one_page_span(uintptr_t start, size_t len) {
 }
 
 static int audit_fake_fops_table(int fd) {
-  enum { span = FOPS_SHOW_FDINFO_OFF + sizeof(uint64_t) };
+  enum { span = 0x108 };
   _Static_assert(span % sizeof(uint64_t) == 0, "fops span alignment");
   uint64_t table[span / sizeof(uint64_t)];
   if (!one_page_span(fake_fops, sizeof(table))) {

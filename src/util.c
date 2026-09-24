@@ -203,7 +203,7 @@ _Static_assert(
 #endif
 #if defined(APP_FOPS_TABLE_MIRROR_OFF)
 _Static_assert(
-    APP_FOPS_TABLE_MIRROR_OFF + 0x110 <= FOPS_TABLE_OFF,
+    APP_FOPS_TABLE_MIRROR_OFF + 0x108 <= FOPS_TABLE_OFF,
     "mirrored FOPS table overlaps primary FOPS table");
 #endif
 
@@ -740,6 +740,11 @@ void put_fake_fops_table(unsigned char *p, size_t off) {
   put64(p, off + FOPS_RELEASE_OFF, text_addr(ASHMEM_RELEASE));
   put64(p, off + FOPS_SPLICE_READ_OFF, text_addr(COPY_SPLICE_READ));
   put64(p, off + FOPS_SHOW_FDINFO_OFF, text_addr(ASHMEM_SHOW_FDINFO));
+  put64(p, off + 0xe0, 0);   /* copy_file_range  */
+  put64(p, off + 0xe8, 0);   /* remap_file_range */
+  put64(p, off + 0xf0, 0);   /* fadvise          */
+  put64(p, off + 0xf8, 0);   /* uring_cmd        */
+  put64(p, off + 0x100, 0);  /* uring_cmd_iopoll */
 }
 
 int try_put_blob_no_zeros(int fd, const unsigned char *blob, size_t len) {
