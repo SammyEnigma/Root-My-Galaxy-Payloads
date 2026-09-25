@@ -231,9 +231,8 @@
  * Reduce to 8 slabs each: 2 × 128 = 256 pipes, ~8,192 pages.
  * That leaves ~8,000 pages of budget for stage 2's fresh physrw
  * pool and the fops-stage refreshes. */
-#define PIPE_RECLAIM_SLABS 15
-#define PIPE_DRAIN_SLABS   4
-
+#define PIPE_RECLAIM_SLABS 9
+#define PIPE_DRAIN_SLABS   3
 /* Stage-2 FOPS pselect waiter layout. Without this, the fops stage
  * uses the default tree layout and never produces a write during
  * pselect observation (matches sibling android14 targets). */

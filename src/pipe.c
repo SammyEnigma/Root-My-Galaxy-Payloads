@@ -1,4 +1,5 @@
 #include "common.h"
+/* v45-cloexec */
 #define PIPE_NONCE_BASE  0x533232554e4f4e43ULL   /* "S22UNONC" */
 
 static inline uint64_t pipe_nonce_for_index(size_t index)
@@ -100,7 +101,7 @@ void resize_pipe_slots(int pipefd[2], size_t slots) {
 }
 
 void make_pipe_object(int pipefd[2]) {
-  SYSCHK(pipe(pipefd));
+  SYSCHK(pipe2(pipefd, O_CLOEXEC));
   resize_pipe_slots(pipefd, 2);
 }
 
@@ -266,7 +267,7 @@ uintptr_t prepare_pipe_buffer_page(void) {
   pipe_objects_ready = 1;
 
   int result_pipe[2];
-  SYSCHK(pipe(result_pipe));
+  SYSCHK(pipe2(result_pipe, O_CLOEXEC));
   pid_t child = SYSCHK(fork());
   if (child == 0) {
     SYSCHK(prctl(PR_SET_PDEATHSIG, SIGKILL));
@@ -930,7 +931,7 @@ static int pipe_read_full(int fd, void *data, size_t size) {
 
 static int pipe_duplicate_bytes(
     int source_fd, int holder[2], size_t size, size_t slots) {
-  SYSCHK(pipe(holder));
+  SYSCHK(pipe2(holder, O_CLOEXEC));
   resize_pipe_slots(holder, slots);
   errno = 0;
   ssize_t duplicated = syscall(SYS_tee, source_fd, holder[1], size, 0);
